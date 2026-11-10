@@ -247,19 +247,25 @@ function sfx(name){
 }
 
 /* ---------- Хранилище ---------- */
-const store = {
+const store = const store = {
   set(key, val){
     const v = JSON.stringify(val);
-    if(tg?.CloudStorage) tg.CloudStorage.setItem(key, v);
-    else localStorage.setItem(key, v);
+    try{
+      if(tg?.CloudStorage) tg.CloudStorage.setItem(key, v);
+      else localStorage.setItem(key, v);
+    }catch(e){}
   },
   get(key){
     return new Promise(res=>{
-      if(tg?.CloudStorage){
-        tg.CloudStorage.getItem(key, (err, v)=>res(!err && v ? JSON.parse(v) : null));
-      } else {
-        res(JSON.parse(localStorage.getItem(key) || 'null'));
-      }
+      const timer = setTimeout(()=>res(null), 1500); // не зависать, если callback не придёт
+      const done = v => { clearTimeout(timer); res(v); };
+      try{
+        if(tg?.CloudStorage){
+          tg.CloudStorage.getItem(key, (err, v)=>done(!err && v ? JSON.parse(v) : null));
+        } else {
+          done(JSON.parse(localStorage.getItem(key) || 'null'));
+        }
+      }catch(e){ done(null); }
     });
   }
 };
