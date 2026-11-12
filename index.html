@@ -65,6 +65,7 @@ h2.t{text-align:center;color:var(--gold);margin:0 0 10px}
 <div class="jokers" id="jokers"></div>
 <div class="stat lastHand" id="lastHand">Комбинация: —</div>
 <div class="hand" id="hand"></div>
+<div class="buttons" id="consumables"></div>
 <div class="buttons">
   <button id="playBtn">▶ Сыграть</button>
   <button class="alt" id="discardBtn">♻ Сброс</button>
@@ -87,6 +88,7 @@ h2.t{text-align:center;color:var(--gold);margin:0 0 10px}
 <div class="overlay" id="shop">
   <div class="panel">
     <h2 class="t">🛒 Магазин</h2>
+    <div id="shopMsg" style="text-align:center;color:#ffe08a;min-height:20px;margin-bottom:6px;font-size:14px"></div>
     <div id="shopItems"></div>
     <button id="nextBtn" class="alt" style="width:100%;margin-top:6px">Дальше ▶</button>
   </div>
@@ -191,6 +193,41 @@ const JOKERS = [
 ];
 const JOKER_BY_ID = Object.fromEntries(JOKERS.map(j=>[j.id,j]));
 
+/* ---------- Уровни комбинаций (планеты) ---------- */
+const LEVEL_BONUS = {chips:10, mult:1};
+
+function defaultLevels(){
+  return Object.fromEntries(Object.keys(HAND_TABLE).map(h=>[h,1]));
+}
+
+/* ---------- Расходники: планеты и таро ---------- */
+const CONSUMABLES = [
+  ...Object.keys(HAND_TABLE).map(h=>({
+    id:'planet:'+h, type:'planet', hand:h,
+    name:`Планета «${h}»`, desc:`Уровень «${h}» +1`, cost:3,
+  })),
+  {id:'tarot:strength', type:'tarot', needs:1, cost:4,
+   name:'Сила', desc:'Ранг 1 выбранной карты +1',
+   fn:(cards)=>{
+     const c = cards[0];
+     const i = RANKS.indexOf(c.rank);
+     if(i >= RANKS.length-1) return 'Это уже туз';
+     c.rank = RANKS[i+1]; c.val = RANK_VAL[c.rank];
+     return `Карта стала ${c.rank}`;
+   }},
+  {id:'tarot:wheel', type:'tarot', needs:1, cost:4,
+   name:'Колесо', desc:'Масть 1 выбранной карты меняется случайно',
+   fn:(cards)=>{
+     const c = cards[0];
+     c.suit = SUITS[Math.floor(Math.random()*SUITS.length)];
+     return `Новая масть: ${c.suit}`;
+   }},
+  {id:'tarot:coin', type:'tarot', needs:0, cost:3,
+   name:'Монета', desc:'Сразу +$5',
+   fn:()=>{ G.money += 5; return '+$5'; }},
+];
+const CONS_BY_ID = Object.fromEntries(CONSUMABLES.map(c=>[c.id,c]));
+
 /* ---------- Колоды ---------- */
 const DECKS = {
   standard: {name:'Стандартная',  desc:'Без бонусов',              apply:{}},
@@ -270,7 +307,8 @@ const store = {
 };
 function save(){
   store.set('run', {runId:G.runId, deckId:G.deckId, ante:G.ante, blindIdx:G.blindIdx,
-    money:G.money, jokers:G.jokers, wins:G.wins, cleared:G.cleared, anteBoss:G.anteBoss});
+    money:G.money, jokers:G.jokers, wins:G.wins, cleared:G.cleared, anteBoss:G.anteBoss,
+    handLevels:G.handLevels, consumables:G.consumables});
 }
 
 /* ---------- Утилиты ---------- */
@@ -333,10 +371,12 @@ function evalHand(cards){
 
 function scoreHand(cards){
   const name = evalHand(cards), base = HAND_TABLE[name];
+  const lvl = (G.handLevels?.[name] || 1) - 1;
   const scoring = G.boss==='hook' ? cards.slice(1) : cards;
-  let chips = base.chips + scoring.reduce((s,c)=> s + (G.boss==='heart' && c.suit==='♥' ? 0 : c.val), 0);
-  chips += G.pendingChips;
-  let mult = base.mult + G.pendingMult, xmult = 1;
+  let chips = base.chips + lvl*LEVEL_BONUS.chips
+            + scoring.reduce((s,c)=> s + (G.boss==='heart' && c.suit==='♥' ? 0 : c.val), 0)
+            + G.pendingChips;
+  let mult = base.mult + lvl*LEVEL_BONUS.mult + G.pendingMult, xmult = 1;
   const ctx = {cards, name, handsPlayed:G.handsPlayed, wins:G.wins};
   for(const id of G.jokers){
     const e = JOKER_BY_ID[id].score?.(ctx) || {};
@@ -455,6 +495,13 @@ function render(){
     d.onclick = ()=>toggle(i);
     handEl.appendChild(d);
   });
+
+  $('consumables').innerHTML = G.consumables.map((id,i)=>{
+    const c = CONS_BY_ID[id];
+    const icon = c.type==='planet' ? '🪐' : '🂠';
+    return `<button class="gray" onclick="useConsumable(${i})">${icon} ${c.name}</button>`;
+  }).join('') || '<span style="opacity:.5;font-size:12px">Слотов расходников нет (макс. 2)</span>';
+
   $('playBtn').disabled = G.selected.size===0 || G.handsLeft===0;
   $('discardBtn').disabled = G.selected.size===0 || G.discardsLeft===0;
   $('skipBtn').disabled = !b.skippable;
@@ -512,24 +559,81 @@ function sortHand(){
   G.selected = new Set(); render();
 }
 
+function useConsumable(idx){
+  const id = G.consumables[idx];
+  const c = CONS_BY_ID[id];
+  const sel = [...G.selected].sort((a,b)=>a-b).map(i=>G.hand[i]);
+  if(c.needs && sel.length !== c.needs){
+    return msg(`Для «${c.name}» выбери ${c.needs} карту`);
+  }
+  let result;
+  if(c.type==='planet'){
+    G.handLevels[c.hand] = (G.handLevels[c.hand] || 1) + 1;
+    result = `«${c.hand}» теперь уровень ${G.handLevels[c.hand]}`;
+  } else {
+    result = c.fn(sel);
+  }
+  G.consumables.splice(idx, 1);
+  G.selected = new Set();
+  sfx('buy');
+  msg(`${c.name}: ${result}`);
+  save(); render();
+}
+
 /* ---------- Магазин ---------- */
+function shopMsg(t){ $('shopMsg').textContent = t; }
+
 function openShop(){
-  const pool = JOKERS.filter(j=>!G.jokers.includes(j.id) && !j.rare);
-  const items = shuffle([...pool]).slice(0,3);
-  $('shopItems').innerHTML = items.map(j=>
-    `<div class="item"><span><b>${j.name}</b><br><small>${j.desc}</small></span>
-     <button onclick="buy('${j.id}')">$${j.cost}</button></div>`).join('')
+  shopMsg('');
+  const jokerPool = JOKERS.filter(j=>!G.jokers.includes(j.id) && !j.rare);
+  const jokers = shuffle([...jokerPool]).slice(0,3);
+  const cons = shuffle([...CONSUMABLES]).slice(0,2);
+
+  // Свои джокеры с кнопкой продажи
+  const owned = G.jokers.map((id,i)=>{
+    const j = JOKER_BY_ID[id];
+    return `<div class="item"><span><b>${j.name}</b> (в слоте)<br><small>${j.desc}</small></span>
+      <button class="danger" onclick="sellJoker(${i})">продать $${Math.floor(j.cost/2)}</button></div>`;
+  }).join('');
+
+  $('shopItems').innerHTML =
+    (owned ? `<div style="font-size:12px;opacity:.7;margin-bottom:4px">Твои джокеры (${G.jokers.length}/5)</div>${owned}<hr style="opacity:.2">` : '')
+    + jokers.map(j=>`<div class="item"><span><b>${j.name}</b><br><small>${j.desc}</small></span>
+      <button onclick="buy('joker','${j.id}')">$${j.cost}</button></div>`).join('')
+    + cons.map(c=>`<div class="item"><span><b>${c.name}</b><br><small>${c.desc}</small></span>
+      <button onclick="buy('cons','${c.id}')">$${c.cost}</button></div>`).join('')
     + `<div class="item"><span>Твои деньги:</span><b>$${G.money}</b></div>`;
   $('shop').classList.add('show');
 }
-window.buy = id=>{
+
+function sellJoker(idx){
+  const id = G.jokers[idx];
   const j = JOKER_BY_ID[id];
-  if(G.money < j.cost) return msg('Не хватает денег!');
-  if(G.jokers.length >= 5) return msg('Максимум 5 джокеров');
-  G.money -= j.cost; G.jokers.push(id);
-  sfx('buy'); msg(`Куплен: ${j.name}`);
+  const price = Math.floor(j.cost/2);
+  G.jokers.splice(idx, 1);
+  G.money += price;
+  sfx('buy');
+  shopMsg(`Продан ${j.name} за $${price}`);
   save(); openShop(); render();
-};
+}
+
+function buy(kind, id){
+  if(kind==='joker'){
+    const j = JOKER_BY_ID[id];
+    if(G.money < j.cost) return shopMsg(`Не хватает денег: нужно $${j.cost}, у вас $${G.money}`);
+    if(G.jokers.length >= 5) return shopMsg('Слоты джокеров заполнены. Продайте один из своих джокеров выше');
+    G.money -= j.cost; G.jokers.push(id);
+    sfx('buy'); shopMsg(`Куплен джокер: ${j.name}`);
+  } else {
+    const c = CONS_BY_ID[id];
+    if(G.money < c.cost) return shopMsg(`Не хватает денег: нужно $${c.cost}, у вас $${G.money}`);
+    if(G.consumables.length >= 2) return shopMsg('Слоты расходников заполнены (макс. 2). Используйте один из них в игре');
+    G.money -= c.cost; G.consumables.push(id);
+    sfx('buy'); shopMsg(`Куплено: ${c.name}`);
+  }
+  save(); openShop(); render();
+}
+
 $('nextBtn').onclick = ()=>{
   $('shop').classList.remove('show');
   nextBlind();
@@ -557,6 +661,7 @@ async function startNew(deckId){
   Object.assign(G, {
     deckId, ante:1, blindIdx:0, money:DECKS[deckId].apply.money||0,
     jokers:[], wins:0, cleared:0, anteBoss:pickBoss(), runId:null,
+    handLevels:defaultLevels(), consumables:[],
   });
   hideMenu();
   await startRun();
@@ -602,14 +707,16 @@ $('soundBtn').onclick = ()=>{ G.sound = !G.sound; $('soundBtn').textContent = G.
 
 /* ---------- Запуск ---------- */
 async function init(){
-  showMenu();                      // сразу показываем колоды, не дожидаясь хранилища
+  showMenu();
   G.best = (await store.get('best')) || 0;
-    let saved = await store.get('run');
+  let saved = await store.get('run');
   if(saved && !DECKS[saved.deckId]) saved = null; // колода удалена, старый забег не загружаем
   if(saved){
     $('continueBtn').style.display = 'block';
     $('continueBtn').onclick = ()=>{
       Object.assign(G, saved);
+      G.handLevels = saved.handLevels || defaultLevels();
+      G.consumables = saved.consumables || [];
       hideMenu(); startBlind();
     };
   }
