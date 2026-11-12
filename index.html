@@ -192,7 +192,32 @@ const JOKERS = [
 
   {id:'legend', name:'Легенда', cost:10, desc:'×3 множитель', score:()=>({xmult:3}), rare:true},
 ];
-const JOKER_BY_ID = Object.fromEntries(JOKERS.map(j=>[j.id,j]));
+/* ---------- Новые джокеры и редкость ---------- */
+JOKERS.push(
+  {id:'bigcard', name:'Крупная карта', cost:3, desc:'+2 фишки за каждую сыгранную карту',
+     score:({cards})=>({chips:2*cards.length})},
+  {id:'spade', name:'Пиковый', cost:4, desc:'+4 множителя за каждую ♠',
+     score:({cards})=>({mult:4*cards.filter(c=>c.suit==='♠').length})},
+  {id:'streak', name:'Серия', cost:6, desc:'×1.5 при Стрите и выше',
+     score:({name})=>({xmult:['Стрит','Флеш','Фулл-хаус','Каре','Стрит-флеш'].includes(name)?1.5:1})},
+  {id:'fourkind', name:'Четвёрка', cost:6, desc:'+30 фишек и +5 множителя при Каре',
+     score:({name})=>name==='Каре' ? {chips:30, mult:5} : {}},
+  {id:'king', name:'Король', cost:8, desc:'×2 за каждого короля в сыгранной руке',
+     score:({cards})=>({xmult:Math.pow(2, cards.filter(c=>c.rank==='K').length)})},
+);
+
+const RARITY_OF = {
+  happy:'common', greedy:'common', stone:'common', ace:'common', lazy:'common',
+  collector:'common', rich:'common', archaeo:'common', bigcard:'common', spade:'common',
+  pairs:'uncommon', double:'uncommon', face:'uncommon', flush:'uncommon', ladder:'uncommon',
+  grow:'uncommon', economist:'uncommon', recycler:'uncommon', banker:'uncommon', sun:'uncommon',
+  veteran:'uncommon', streak:'uncommon', fourkind:'uncommon',
+  king:'rare', legend:'rare',
+};
+JOKERS.forEach(j => { j.rarity = RARITY_OF[j.id]; });
+
+const RARITY_NAME = {common:'Обычный', uncommon:'Необычный', rare:'Редкий'};
+const RARITY_WEIGHTS = [['common',70], ['uncommon',25], ['rare',5]];const JOKER_BY_ID = Object.fromEntries(JOKERS.map(j=>[j.id,j]));
 
 /* ---------- Уровни комбинаций (планеты) ---------- */
 const LEVEL_BONUS = {chips:10, mult:1};
@@ -619,14 +644,38 @@ function useConsumable(idx){
 /* ---------- Магазин ---------- */
 function shopMsg(t){ $('shopMsg').textContent = t; }
 
-function openShop(){
+function rollRarity(){
+  let r = Math.random() * 100;
+  for(const [name, w] of RARITY_WEIGHTS){
+    r -= w;
+    if(r < 0) return name;
+  }
+  return 'common';
+}
+
+function pickJoker(exclude){
+  for(let tries = 0; tries < 50; tries++){
+    const want = rollRarity();
+    const pool = JOKERS.filter(j => j.rarity === want && !exclude.includes(j.id));
+    if(pool.length) return pool[Math.floor(Math.random() * pool.length)];
+  }
+  // запасной вариант: любой джокер, которого ещё нет
+  const any = JOKERS.filter(j => !exclude.includes(j.id));
+  return any.length ? any[Math.floor(Math.random() * any.length)] : null;
+}function openShop(){
   shopMsg('');
-  const jokerPool = JOKERS.filter(j=>!G.jokers.includes(j.id) && !j.rare);
-  const jokers = shuffle([...jokerPool]).slice(0,3);
-  const cons = shuffle([...CONSUMABLES]).slice(0,2);
+
+  // 3 джокера с учётом редкости (70/25/5), без повторов
+  const jokers = [];
+  while(jokers.length < 3){
+    const j = pickJoker([...G.jokers, ...jokers.map(x => x.id)]);
+    if(!j) break;
+    jokers.push(j);
+  }
+  const cons = shuffle([...CONSUMABLES]).slice(0, 2);
 
   // Свои джокеры с кнопкой продажи
-  const owned = G.jokers.map((id,i)=>{
+  const owned = G.jokers.map((id, i) => {
     const j = JOKER_BY_ID[id];
     return `<div class="item"><span><b>${j.name}</b> (в слоте)<br><small>${j.desc}</small></span>
       <button class="danger" onclick="sellJoker(${i})">продать $${Math.floor(j.cost/2)}</button></div>`;
@@ -634,9 +683,9 @@ function openShop(){
 
   $('shopItems').innerHTML =
     (owned ? `<div style="font-size:12px;opacity:.7;margin-bottom:4px">Твои джокеры (${G.jokers.length}/5)</div>${owned}<hr style="opacity:.2">` : '')
-    + jokers.map(j=>`<div class="item"><span><b>${j.name}</b><br><small>${j.desc}</small></span>
+    + jokers.map(j => `<div class="item"><span><b>${j.name}</b> <small>[${RARITY_NAME[j.rarity]}]</small><br><small>${j.desc}</small></span>
       <button onclick="buy('joker','${j.id}')">$${j.cost}</button></div>`).join('')
-    + cons.map(c=>`<div class="item"><span><b>${c.name}</b><br><small>${c.desc}</small></span>
+    + cons.map(c => `<div class="item"><span><b>${c.name}</b><br><small>${c.desc}</small></span>
       <button onclick="buy('cons','${c.id}')">$${c.cost}</button></div>`).join('')
     + `<div class="item"><span>Твои деньги:</span><b>$${G.money}</b></div>`;
   $('shop').classList.add('show');
