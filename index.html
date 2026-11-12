@@ -196,7 +196,6 @@ const DECKS = {
   standard: {name:'Стандартная',  desc:'Без бонусов',              apply:{}},
   red:      {name:'Красная',      desc:'+1 сброс за блайнд',       apply:{discards:1}},
   blue:     {name:'Синяя',        desc:'+1 рука за блайнд',        apply:{hands:1}},
-  gold:     {name:'Золотая',      desc:'Старт с $10',              apply:{money:10}},
   nofaces:  {name:'Без картинок', desc:'Нет J/Q/K, +$4 за блайнд', apply:{}, noFaces:true, econ:4},
 };
 
@@ -605,7 +604,8 @@ $('soundBtn').onclick = ()=>{ G.sound = !G.sound; $('soundBtn').textContent = G.
 async function init(){
   showMenu();                      // сразу показываем колоды, не дожидаясь хранилища
   G.best = (await store.get('best')) || 0;
-  const saved = await store.get('run');
+    let saved = await store.get('run');
+  if(saved && !DECKS[saved.deckId]) saved = null; // колода удалена, старый забег не загружаем
   if(saved){
     $('continueBtn').style.display = 'block';
     $('continueBtn').onclick = ()=>{
