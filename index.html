@@ -64,6 +64,7 @@ h2.t{text-align:center;color:var(--gold);margin:0 0 10px}
 <div class="bossInfo" id="bossInfo"></div>
 <div class="jokers" id="jokers"></div>
 <div class="stat lastHand" id="lastHand">Комбинация: —</div>
+<div class="stat lastHand" id="curHand" style="min-height:24px"></div>
 <div class="hand" id="hand"></div>
 <div class="buttons" id="consumables"></div>
 <div class="buttons">
@@ -222,11 +223,21 @@ const CONSUMABLES = [
      c.suit = SUITS[Math.floor(Math.random()*SUITS.length)];
      return `Новая масть: ${c.suit}`;
    }},
-  {id:'tarot:coin', type:'tarot', needs:0, cost:3,
+    {id:'tarot:gold', type:'tarot', needs:1, cost:4,
+   name:'Золото', desc:'Выбранная карта станет золотой',
+   fn:(cards)=>{
+     cards[0].enh = 'gold';
+     return 'Карта стала золотой';
+   }},
+   {id:'tarot:coin', type:'tarot', needs:0, cost:3,
    name:'Монета', desc:'Сразу +$5',
    fn:()=>{ G.money += 5; return '+$5'; }},
 ];
 const CONS_BY_ID = Object.fromEntries(CONSUMABLES.map(c=>[c.id,c]));
+/* ---------- Усиления карт ---------- */
+const ENHANCEMENTS = {
+  gold: {name:'Золотая', desc:'В конце блайнда даёт +$2, если карта была сыграна'},
+};
 
 /* ---------- Колоды ---------- */
 const DECKS = {
@@ -445,7 +456,8 @@ function winBlind(){
     if(f) reward += f(ctx)?.money || 0;
   }
   G.money += reward; G.wins++; G.cleared++;
-  G.best = Math.max(G.best, G.cleared);
+    reward += 2 * (G.goldPlayed || 0);
+  G.goldPlayed = 0;G.best = Math.max(G.best, G.cleared);
   store.set('best', G.best);
   msg(`🎉 ${b.name} пройден! +$${reward}`);
   save(); render();
@@ -507,10 +519,25 @@ function render(){
   $('skipBtn').disabled = !b.skippable;
 }
 
+function updateCurrentHand(){
+  const sel = [...G.selected].sort((a,b)=>a-b).map(i=>G.hand[i]);
+  if(sel.length === 0){ $('curHand').textContent = ''; return; }
+  $('curHand').textContent = `Сейчас: ${evalHand(sel)}`;
+}
+
+function showCardInfo(i){
+  const c = G.hand[i];
+  if(!c || !c.enh) return;
+  const e = ENHANCEMENTS[c.enh];
+  msg(`${c.rank}${c.suit}: усиление «${e.name}». ${e.desc}`);
+}
+
 function toggle(i){
   if(G.selected.has(i)) G.selected.delete(i);
   else if(G.selected.size < maxSelect()){ G.selected.add(i); sfx('select'); }
   render();
+  updateCurrentHand();
+  showCardInfo(i);
 }
 
 /* ---------- Действия ---------- */
@@ -519,7 +546,7 @@ function play(){
   const cards = idx.map(i=>G.hand[i]);
   const r = scoreHand(cards);
   G.score += r.total; G.handsLeft--; G.handsPlayed++;
-  G.pendingMult = 0; G.pendingChips = 0;
+  G.pendingMult = 0; G.pendingChips = 0;  G.goldPlayed = (G.goldPlayed || 0) + cards.filter(c=>c.enh==='gold').length;
   G.hand = G.hand.filter((_,i)=>!G.selected.has(i));
   G.selected = new Set();
   draw();
