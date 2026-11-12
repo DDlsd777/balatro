@@ -517,12 +517,21 @@ function render(){
   $('playBtn').disabled = G.selected.size===0 || G.handsLeft===0;
   $('discardBtn').disabled = G.selected.size===0 || G.discardsLeft===0;
   $('skipBtn').disabled = !b.skippable;
+    updateCurrentHand();
 }
 
 function updateCurrentHand(){
   const sel = [...G.selected].sort((a,b)=>a-b).map(i=>G.hand[i]);
-  if(sel.length === 0){ $('curHand').textContent = ''; return; }
-  $('curHand').textContent = `Сейчас: ${evalHand(sel)}`;
+  if(sel.length === 0){
+    $('curHand').textContent = 'Выберите карты, чтобы увидеть комбинацию';
+    return;
+  }
+  const name = evalHand(sel);
+  const lvl = G.handLevels?.[name] || 1;
+  const base = HAND_TABLE[name];
+  const chips = base.chips + (lvl - 1) * LEVEL_BONUS.chips;
+  const mult  = base.mult  + (lvl - 1) * LEVEL_BONUS.mult;
+  $('curHand').textContent = `Сейчас: ${name}, уровень ${lvl} (${chips} × ${mult})`;
 }
 
 function showCardInfo(i){
