@@ -150,74 +150,65 @@ const pickBoss = () => BOSS_IDS[Math.floor(Math.random() * BOSS_IDS.length)];
 const baseTarget = ante => Math.floor(300 * Math.pow(1.7, ante - 1));
 const blindTarget = () => Math.round(baseTarget(G.ante) * BLINDS[G.blindIdx].mult / 10) * 10;
 
+/* ---------- Редкость джокеров ---------- */
+const RARITY_NAME = {common:'Обычный', uncommon:'Необычный', rare:'Редкий'};
+const RARITY_WEIGHTS = [['common',70], ['uncommon',25], ['rare',5]];
+
 /* ---------- Джокеры ---------- */
 const JOKERS = [
-  {id:'happy',   name:'Весёлый',    cost:3, desc:'+4 множителя', score:()=>({mult:4})},
-  {id:'greedy',  name:'Жадный',     cost:4, desc:'+3 фишки за каждую ♦',
+  // Обычные (70%)
+  {id:'happy',   name:'Весёлый',    cost:3, rarity:'common', desc:'+4 множителя', score:()=>({mult:4})},
+  {id:'greedy',  name:'Жадный',     cost:4, rarity:'common', desc:'+3 фишки за каждую ♦',
      score:({cards})=>({chips:3*cards.filter(c=>c.suit==='♦').length})},
-  {id:'pairs',   name:'Мастер пар', cost:5, desc:'+8 множителя при Паре и выше',
-     score:({name})=>({mult:name==='Старшая карта'?0:8})},
-  {id:'stone',   name:'Камень',     cost:4, desc:'+50 фишек', score:()=>({chips:50})},
-  {id:'double',  name:'Удвоитель',  cost:6, desc:'×1.5 множитель', score:()=>({xmult:1.5})},
-  {id:'face',    name:'Фигурщик',   cost:5, desc:'+5 множителя за каждую картинку',
-     score:({cards})=>({mult:5*cards.filter(c=>FACES.includes(c.rank)).length})},
-  {id:'flush',   name:'Флешер',     cost:6, desc:'×2 при Флеше и выше',
-     score:({name})=>({xmult:['Флеш','Стрит-флеш'].includes(name)?2:1})},
-  {id:'ace',     name:'Туз',        cost:4, desc:'+11 фишек за каждый туз',
+  {id:'stone',   name:'Камень',     cost:4, rarity:'common', desc:'+50 фишек', score:()=>({chips:50})},
+  {id:'ace',     name:'Туз',        cost:4, rarity:'common', desc:'+11 фишек за каждый туз',
      score:({cards})=>({chips:11*cards.filter(c=>c.rank==='A').length})},
-  {id:'lazy',    name:'Ленивый',    cost:4, desc:'+10 множителя, если сыграно ≤2 карт',
+  {id:'lazy',    name:'Ленивый',    cost:4, rarity:'common', desc:'+10 множителя, если сыграно ≤2 карт',
      score:({cards})=>({mult:cards.length<=2?10:0})},
-  {id:'grow',    name:'Накопитель', cost:7, desc:'+2 множителя за каждую сыгранную руку в раунде',
-     score:({handsPlayed})=>({mult:2*handsPlayed})},
-  {id:'ladder',  name:'Лесенка',    cost:5, desc:'+40 фишек при Стрите и выше',
-     score:({name})=>({chips:['Стрит','Флеш','Фулл-хаус','Каре','Стрит-флеш'].includes(name)?40:0})},
-  {id:'veteran', name:'Ветеран',    cost:7, desc:'+0.25 ×множителя за каждый выигранный блайнд',
-     score:({wins})=>({xmult:1+0.25*wins})},
-
-  {id:'collector', name:'Сборщик',      cost:4, desc:'+$1 за каждый сброс',
+  {id:'collector', name:'Сборщик',  cost:4, rarity:'common', desc:'+$1 за каждый сброс',
      onDiscard:()=>({money:1}), trigger:'сброс'},
-  {id:'economist', name:'Экономный',    cost:5, desc:'Каждый сброс даёт +2 множителя следующей руке',
-     onDiscard:()=>({pendingMult:2}), trigger:'сброс'},
-  {id:'recycler',  name:'Переработчик', cost:6, desc:'Каждый сброс даёт +5 фишек следующей руке',
-     onDiscard:()=>({pendingChips:5}), trigger:'сброс'},
-
-  {id:'rich',   name:'Копилка',  cost:5, desc:'+$3 в конце каждого блайнда',
+  {id:'rich',   name:'Копилка',     cost:5, rarity:'common', desc:'+$3 в конце каждого блайнда',
      onRoundEnd:()=>({money:3}), trigger:'конец блайнда'},
-  {id:'banker', name:'Банкир',   cost:5, desc:'+$1 за каждые $10 у тебя (до $5)',
-     onRoundEnd:({money})=>({money:Math.min(5,Math.floor(money/10))}), trigger:'конец блайнда'},
-  {id:'archaeo',name:'Археолог', cost:4, desc:'+$2 за каждый неиспользованный сброс',
+  {id:'archaeo',name:'Археолог',    cost:4, rarity:'common', desc:'+$2 за каждый неиспользованный сброс',
      onRoundEnd:({discardsLeft})=>({money:2*discardsLeft}), trigger:'конец блайнда'},
-  {id:'sun',    name:'Солнце',   cost:6, desc:'+$2 за каждую неиспользованную руку',
-     onRoundEnd:({handsLeft})=>({money:2*handsLeft}), trigger:'конец блайнда'},
-
-  {id:'legend', name:'Легенда', cost:10, desc:'×3 множитель', score:()=>({xmult:3}), rare:true},
-];
-/* ---------- Новые джокеры и редкость ---------- */
-JOKERS.push(
-  {id:'bigcard', name:'Крупная карта', cost:3, desc:'+2 фишки за каждую сыгранную карту',
+  {id:'bigcard', name:'Крупная карта', cost:3, rarity:'common', desc:'+2 фишки за каждую сыгранную карту',
      score:({cards})=>({chips:2*cards.length})},
-  {id:'spade', name:'Пиковый', cost:4, desc:'+4 множителя за каждую ♠',
+  {id:'spade',   name:'Пиковый',    cost:4, rarity:'common', desc:'+4 множителя за каждую ♠',
      score:({cards})=>({mult:4*cards.filter(c=>c.suit==='♠').length})},
-  {id:'streak', name:'Серия', cost:6, desc:'×1.5 при Стрите и выше',
+
+  // Необычные (25%)
+  {id:'pairs',   name:'Мастер пар', cost:5, rarity:'uncommon', desc:'+8 множителя при Паре и выше',
+     score:({name})=>({mult:name==='Старшая карта'?0:8})},
+  {id:'double',  name:'Удвоитель',  cost:6, rarity:'uncommon', desc:'×1.5 множитель', score:()=>({xmult:1.5})},
+  {id:'face',    name:'Фигурщик',   cost:5, rarity:'uncommon', desc:'+5 множителя за каждую картинку',
+     score:({cards})=>({mult:5*cards.filter(c=>FACES.includes(c.rank)).length})},
+  {id:'flush',   name:'Флешер',     cost:6, rarity:'uncommon', desc:'×2 при Флеше и выше',
+     score:({name})=>({xmult:['Флеш','Стрит-флеш'].includes(name)?2:1})},
+  {id:'ladder',  name:'Лесенка',    cost:5, rarity:'uncommon', desc:'+40 фишек при Стрите и выше',
+     score:({name})=>({chips:['Стрит','Флеш','Фулл-хаус','Каре','Стрит-флеш'].includes(name)?40:0})},
+  {id:'grow',    name:'Накопитель', cost:7, rarity:'uncommon', desc:'+2 множителя за каждую сыгранную руку в раунде',
+     score:({handsPlayed})=>({mult:2*handsPlayed})},
+  {id:'economist', name:'Экономный', cost:5, rarity:'uncommon', desc:'Каждый сброс даёт +2 множителя следующей руке',
+     onDiscard:()=>({pendingMult:2}), trigger:'сброс'},
+  {id:'recycler',  name:'Переработчик', cost:6, rarity:'uncommon', desc:'Каждый сброс даёт +5 фишек следующей руке',
+     onDiscard:()=>({pendingChips:5}), trigger:'сброс'},
+  {id:'banker', name:'Банкир',      cost:5, rarity:'uncommon', desc:'+$1 за каждые $10 у тебя (до $5)',
+     onRoundEnd:({money})=>({money:Math.min(5,Math.floor(money/10))}), trigger:'конец блайнда'},
+  {id:'sun',    name:'Солнце',      cost:6, rarity:'uncommon', desc:'+$2 за каждую неиспользованную руку',
+     onRoundEnd:({handsLeft})=>({money:2*handsLeft}), trigger:'конец блайнда'},
+  {id:'veteran', name:'Ветеран',    cost:7, rarity:'uncommon', desc:'+0.25 ×множителя за каждый выигранный блайнд',
+     score:({wins})=>({xmult:1+0.25*wins})},
+  {id:'streak', name:'Серия',       cost:6, rarity:'uncommon', desc:'×1.5 при Стрите и выше',
      score:({name})=>({xmult:['Стрит','Флеш','Фулл-хаус','Каре','Стрит-флеш'].includes(name)?1.5:1})},
-  {id:'fourkind', name:'Четвёрка', cost:6, desc:'+30 фишек и +5 множителя при Каре',
+  {id:'fourkind', name:'Четвёрка',  cost:6, rarity:'uncommon', desc:'+30 фишек и +5 множителя при Каре',
      score:({name})=>name==='Каре' ? {chips:30, mult:5} : {}},
-  {id:'king', name:'Король', cost:8, desc:'×2 за каждого короля в сыгранной руке',
+
+  // Редкие (5%)
+  {id:'king',   name:'Король',      cost:8,  rarity:'rare', desc:'×2 за каждого короля в сыгранной руке',
      score:({cards})=>({xmult:Math.pow(2, cards.filter(c=>c.rank==='K').length)})},
-);
-
-const RARITY_OF = {
-  happy:'common', greedy:'common', stone:'common', ace:'common', lazy:'common',
-  collector:'common', rich:'common', archaeo:'common', bigcard:'common', spade:'common',
-  pairs:'uncommon', double:'uncommon', face:'uncommon', flush:'uncommon', ladder:'uncommon',
-  grow:'uncommon', economist:'uncommon', recycler:'uncommon', banker:'uncommon', sun:'uncommon',
-  veteran:'uncommon', streak:'uncommon', fourkind:'uncommon',
-  king:'rare', legend:'rare',
-};
-JOKERS.forEach(j => { j.rarity = RARITY_OF[j.id]; });
-
-const RARITY_NAME = {common:'Обычный', uncommon:'Необычный', rare:'Редкий'};
-const RARITY_WEIGHTS = [['common',70], ['uncommon',25], ['rare',5]];const JOKER_BY_ID = Object.fromEntries(JOKERS.map(j=>[j.id,j]));
+  {id:'legend', name:'Легенда',     cost:10, rarity:'rare', desc:'×3 множитель', score:()=>({xmult:3})},
+];
+const JOKER_BY_ID = Object.fromEntries(JOKERS.map(j=>[j.id,j]));
 
 /* ---------- Уровни комбинаций (планеты) ---------- */
 const LEVEL_BONUS = {chips:10, mult:1};
@@ -225,6 +216,11 @@ const LEVEL_BONUS = {chips:10, mult:1};
 function defaultLevels(){
   return Object.fromEntries(Object.keys(HAND_TABLE).map(h=>[h,1]));
 }
+
+/* ---------- Усиления карт ---------- */
+const ENHANCEMENTS = {
+  gold: {name:'Золотая', desc:'В конце блайнда даёт +$2, если карта была сыграна'},
+};
 
 /* ---------- Расходники: планеты и таро ---------- */
 const CONSUMABLES = [
@@ -248,21 +244,17 @@ const CONSUMABLES = [
      c.suit = SUITS[Math.floor(Math.random()*SUITS.length)];
      return `Новая масть: ${c.suit}`;
    }},
-    {id:'tarot:gold', type:'tarot', needs:1, cost:4,
+  {id:'tarot:gold', type:'tarot', needs:1, cost:4,
    name:'Золото', desc:'Выбранная карта станет золотой',
    fn:(cards)=>{
      cards[0].enh = 'gold';
      return 'Карта стала золотой';
    }},
-   {id:'tarot:coin', type:'tarot', needs:0, cost:3,
+  {id:'tarot:coin', type:'tarot', needs:0, cost:3,
    name:'Монета', desc:'Сразу +$5',
    fn:()=>{ G.money += 5; return '+$5'; }},
 ];
 const CONS_BY_ID = Object.fromEntries(CONSUMABLES.map(c=>[c.id,c]));
-/* ---------- Усиления карт ---------- */
-const ENHANCEMENTS = {
-  gold: {name:'Золотая', desc:'В конце блайнда даёт +$2, если карта была сыграна'},
-};
 
 /* ---------- Колоды ---------- */
 const DECKS = {
@@ -274,7 +266,8 @@ const DECKS = {
 
 /* ---------- Состояние ---------- */
 const G = {best:0, sound:true, jokers:[], hand:[], deck:[], selected:new Set(),
-           pendingMult:0, pendingChips:0, wins:0, cleared:0, handsPlayed:0, runId:null};
+           pendingMult:0, pendingChips:0, wins:0, cleared:0, handsPlayed:0, runId:null,
+           shopStock:[], goldPlayed:0};
 
 /* ---------- Звук ---------- */
 const SOUND_FILES = {
@@ -350,6 +343,7 @@ function save(){
 /* ---------- Утилиты ---------- */
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function msg(t){ $('msg').textContent = t; }
+function shopMsg(t){ $('shopMsg').textContent = t; }
 function popup(text){
   const p = document.createElement('div');
   p.className = 'popup'; p.textContent = text;
@@ -480,11 +474,14 @@ function winBlind(){
     const f = JOKER_BY_ID[id].onRoundEnd;
     if(f) reward += f(ctx)?.money || 0;
   }
+  reward += 2 * (G.goldPlayed || 0);
+  G.goldPlayed = 0;
   G.money += reward; G.wins++; G.cleared++;
-    reward += 2 * (G.goldPlayed || 0);
-  G.goldPlayed = 0;G.best = Math.max(G.best, G.cleared);
+  G.best = Math.max(G.best, G.cleared);
   store.set('best', G.best);
   msg(`🎉 ${b.name} пройден! +$${reward}`);
+  G.shopStock = makeShopStock();   // товары создаются ОДИН раз, здесь
+  shopMsg('');
   save(); render();
   openShop();
 }
@@ -519,7 +516,7 @@ function render(){
   $('jokers').innerHTML = G.jokers.map(id=>{
     const j = JOKER_BY_ID[id];
     const t = j.trigger ? `<span class="trig">${j.trigger}</span>` : '';
-    return `<div class="joker ${j.rare?'legend':''}"><b>${j.name}</b><br>${j.desc}${t}</div>`;
+    return `<div class="joker ${j.rarity==='rare'?'legend':''}"><b>${j.name}</b><br>${j.desc}${t}</div>`;
   }).join('') || '<span style="opacity:.5">Джокеров нет</span>';
 
   const handEl = $('hand'); handEl.innerHTML = '';
@@ -542,7 +539,7 @@ function render(){
   $('playBtn').disabled = G.selected.size===0 || G.handsLeft===0;
   $('discardBtn').disabled = G.selected.size===0 || G.discardsLeft===0;
   $('skipBtn').disabled = !b.skippable;
-    updateCurrentHand();
+  updateCurrentHand();
 }
 
 function updateCurrentHand(){
@@ -570,7 +567,6 @@ function toggle(i){
   if(G.selected.has(i)) G.selected.delete(i);
   else if(G.selected.size < maxSelect()){ G.selected.add(i); sfx('select'); }
   render();
-  updateCurrentHand();
   showCardInfo(i);
 }
 
@@ -580,7 +576,8 @@ function play(){
   const cards = idx.map(i=>G.hand[i]);
   const r = scoreHand(cards);
   G.score += r.total; G.handsLeft--; G.handsPlayed++;
-  G.pendingMult = 0; G.pendingChips = 0;  G.goldPlayed = (G.goldPlayed || 0) + cards.filter(c=>c.enh==='gold').length;
+  G.pendingMult = 0; G.pendingChips = 0;
+  G.goldPlayed = (G.goldPlayed || 0) + cards.filter(c=>c.enh==='gold').length;
   G.hand = G.hand.filter((_,i)=>!G.selected.has(i));
   G.selected = new Set();
   draw();
@@ -625,188 +622,4 @@ function useConsumable(idx){
   const c = CONS_BY_ID[id];
   const sel = [...G.selected].sort((a,b)=>a-b).map(i=>G.hand[i]);
   if(c.needs && sel.length !== c.needs){
-    return msg(`Для «${c.name}» выбери ${c.needs} карту`);
-  }
-  let result;
-  if(c.type==='planet'){
-    G.handLevels[c.hand] = (G.handLevels[c.hand] || 1) + 1;
-    result = `«${c.hand}» теперь уровень ${G.handLevels[c.hand]}`;
-  } else {
-    result = c.fn(sel);
-  }
-  G.consumables.splice(idx, 1);
-  G.selected = new Set();
-  sfx('buy');
-  msg(`${c.name}: ${result}`);
-  save(); render();
-}
-
-/* ---------- Магазин ---------- */
-function shopMsg(t){ $('shopMsg').textContent = t; }
-
-function rollRarity(){
-  let r = Math.random() * 100;
-  for(const [name, w] of RARITY_WEIGHTS){
-    r -= w;
-    if(r < 0) return name;
-  }
-  return 'common';
-}
-
-function pickJoker(exclude){
-  for(let tries = 0; tries < 50; tries++){
-    const want = rollRarity();
-    const pool = JOKERS.filter(j => j.rarity === want && !exclude.includes(j.id));
-    if(pool.length) return pool[Math.floor(Math.random() * pool.length)];
-  }
-  // запасной вариант: любой джокер, которого ещё нет
-  const any = JOKERS.filter(j => !exclude.includes(j.id));
-  return any.length ? any[Math.floor(Math.random() * any.length)] : null;
-}function openShop(){
-  shopMsg('');
-
-  // 3 джокера с учётом редкости (70/25/5), без повторов
-  const jokers = [];
-  while(jokers.length < 3){
-    const j = pickJoker([...G.jokers, ...jokers.map(x => x.id)]);
-    if(!j) break;
-    jokers.push(j);
-  }
-  const cons = shuffle([...CONSUMABLES]).slice(0, 2);
-
-  // Свои джокеры с кнопкой продажи
-  const owned = G.jokers.map((id, i) => {
-    const j = JOKER_BY_ID[id];
-    return `<div class="item"><span><b>${j.name}</b> (в слоте)<br><small>${j.desc}</small></span>
-      <button class="danger" onclick="sellJoker(${i})">продать $${Math.floor(j.cost/2)}</button></div>`;
-  }).join('');
-
-  $('shopItems').innerHTML =
-    (owned ? `<div style="font-size:12px;opacity:.7;margin-bottom:4px">Твои джокеры (${G.jokers.length}/5)</div>${owned}<hr style="opacity:.2">` : '')
-    + jokers.map(j => `<div class="item"><span><b>${j.name}</b> <small>[${RARITY_NAME[j.rarity]}]</small><br><small>${j.desc}</small></span>
-      <button onclick="buy('joker','${j.id}')">$${j.cost}</button></div>`).join('')
-    + cons.map(c => `<div class="item"><span><b>${c.name}</b><br><small>${c.desc}</small></span>
-      <button onclick="buy('cons','${c.id}')">$${c.cost}</button></div>`).join('')
-    + `<div class="item"><span>Твои деньги:</span><b>$${G.money}</b></div>`;
-  $('shop').classList.add('show');
-}
-
-function sellJoker(idx){
-  const id = G.jokers[idx];
-  const j = JOKER_BY_ID[id];
-  const price = Math.floor(j.cost/2);
-  G.jokers.splice(idx, 1);
-  G.money += price;
-  sfx('buy');
-  shopMsg(`Продан ${j.name} за $${price}`);
-  save(); openShop(); render();
-}
-
-function buy(kind, id){
-  if(kind==='joker'){
-    const j = JOKER_BY_ID[id];
-    if(G.money < j.cost) return shopMsg(`Не хватает денег: нужно $${j.cost}, у вас $${G.money}`);
-    if(G.jokers.length >= 5) return shopMsg('Слоты джокеров заполнены. Продайте один из своих джокеров выше');
-    G.money -= j.cost; G.jokers.push(id);
-    sfx('buy'); shopMsg(`Куплен джокер: ${j.name}`);
-  } else {
-    const c = CONS_BY_ID[id];
-    if(G.money < c.cost) return shopMsg(`Не хватает денег: нужно $${c.cost}, у вас $${G.money}`);
-    if(G.consumables.length >= 2) return shopMsg('Слоты расходников заполнены (макс. 2). Используйте один из них в игре');
-    G.money -= c.cost; G.consumables.push(id);
-    sfx('buy'); shopMsg(`Куплено: ${c.name}`);
-  }
-  save(); openShop(); render();
-}
-
-$('nextBtn').onclick = ()=>{
-  $('shop').classList.remove('show');
-  nextBlind();
-};
-
-/* ---------- Меню ---------- */
-function buildMenu(){
-  $('deckList').innerHTML = '';
-  for(const [id,d] of Object.entries(DECKS)){
-    const b = document.createElement('button');
-    b.style.cssText = 'width:100%;margin-bottom:6px;text-align:left';
-    b.textContent = `${d.name} — ${d.desc}`;
-    b.onclick = ()=>startNew(id);
-    $('deckList').appendChild(b);
-  }
-}
-function showMenu(title){
-  $('menuTitle').textContent = title || 'Выбор колоды';
-  buildMenu();
-  $('menu').classList.add('show');
-}
-function hideMenu(){ $('menu').classList.remove('show'); }
-
-async function startNew(deckId){
-  Object.assign(G, {
-    deckId, ante:1, blindIdx:0, money:DECKS[deckId].apply.money||0,
-    jokers:[], wins:0, cleared:0, anteBoss:pickBoss(), runId:null,
-    handLevels:defaultLevels(), consumables:[],
-  });
-  hideMenu();
-  await startRun();
-  startBlind();
-  if(!G.runId) msg('⚠ Нет связи с сервером: этот забег не попадёт в рейтинг');
-}
-
-/* ---------- Таблица лидеров ---------- */
-let boardPeriod = 'week';
-async function showBoard(period = boardPeriod){
-  boardPeriod = period;
-  $('tabWeek').className = period==='week' ? 'alt' : 'gray';
-  $('tabAll').className  = period==='all'  ? 'alt' : 'gray';
-  $('board').classList.add('show');
-
-  const chatTitle = tg?.initDataUnsafe?.chat?.title;
-  $('boardTitle').textContent = chatTitle ? `🏆 ${chatTitle}` : '🏆 Личный рейтинг';
-
-  const list = $('boardList'); list.textContent = 'Загрузка...';
-  try{
-    const data = await apiPost('/top', {period});
-    list.textContent = '';
-    if(!data.length){ list.textContent = 'Пока пусто. Сыграйте первый забег!'; return; }
-    data.forEach((x,i)=>{
-      const row = document.createElement('div'); row.className = 'row';
-      const name = document.createElement('span'); name.textContent = `${i+1}. ${x.name}`;
-      const sc = document.createElement('b'); sc.textContent = x.score;
-      row.append(name, sc); list.appendChild(row);
-    });
-  }catch(e){ list.textContent = 'Сервер недоступен'; }
-}
-$('tabWeek').onclick = ()=>showBoard('week');
-$('tabAll').onclick  = ()=>showBoard('all');
-$('boardBtn').onclick = ()=>showBoard();
-$('closeBoard').onclick = ()=>$('board').classList.remove('show');
-
-/* ---------- Кнопки ---------- */
-$('playBtn').onclick = play;
-$('discardBtn').onclick = discard;
-$('sortBtn').onclick = sortHand;
-$('skipBtn').onclick = skipBlind;
-$('soundBtn').onclick = ()=>{ G.sound = !G.sound; $('soundBtn').textContent = G.sound ? '🔊' : '🔇'; };
-
-/* ---------- Запуск ---------- */
-async function init(){
-  showMenu();
-  G.best = (await store.get('best')) || 0;
-  let saved = await store.get('run');
-  if(saved && !DECKS[saved.deckId]) saved = null; // колода удалена, старый забег не загружаем
-  if(saved){
-    $('continueBtn').style.display = 'block';
-    $('continueBtn').onclick = ()=>{
-      Object.assign(G, saved);
-      G.handLevels = saved.handLevels || defaultLevels();
-      G.consumables = saved.consumables || [];
-      hideMenu(); startBlind();
-    };
-  }
-}
-init();
-</script>
-</body>
-</html>
+    return msg(`Для «${c.name}»
