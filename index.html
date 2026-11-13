@@ -157,7 +157,7 @@ h2.t{text-align:center;color:var(--gold);margin:0 0 10px}
     <div class="box">Сбросы<b id="discards">0</b></div>
     <div class="box money">Деньги<b id="money">$0</b></div>
     <div class="box">Антэ<b id="ante">-</b></div>
-    <div class="box">Колода<b id="deckLeftLabel">0</b></div>
+    <div class="box">Раунд<b id="roundNum">1/24</b></div>
   </div>
 
   <!-- Джокеры -->
@@ -638,7 +638,9 @@ function startBlind(){
   msg(`${b.name}. Цель: ${G.target}.${bossText}`);
 }
 
-function bossLabel(){
+/* ---------- Номер раунда: 3 блайнда в каждом антэ, всего 24 ---------- */
+const MAX_ROUNDS = MAX_ANTE * 3;
+function roundNo(){ return (G.ante - 1) * 3 + G.blindIdx + 1; }function bossLabel(){
   if(!G.boss) return '';
   const extra = G.boss==='head' ? ` (${SUIT_NAME[G.headSuit]})` : '';
   return `${BOSSES[G.boss].name}: ${BOSSES[G.boss].desc}${extra}`;
@@ -720,7 +722,7 @@ function render(){
   $('hands').textContent = G.handsLeft;
   $('discards').textContent = G.discardsLeft;
   $('money').textContent = '$' + G.money;
-  $('deckLeftLabel').textContent = G.deck.length;
+  $('roundNum').textContent = roundNo() + '/' + MAX_ROUNDS;
   $('deckCount').textContent = G.deck.length;
   $('soundBtn').textContent = G.sound ? '🔊' : '🔇';
   $('bossInfo').textContent = G.boss ? bossLabel() : '';
