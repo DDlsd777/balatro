@@ -12,10 +12,8 @@ html,body{margin:0;height:100%}
 body{font-family:system-ui,sans-serif;color:#fff;overflow:hidden;user-select:none;
   background:radial-gradient(ellipse at 60% 40%,#7d916c 0%,#44573f 70%,#2c3a2a 100%)}
 
-/* ---------- Каркас ---------- */
 #app{height:100vh;height:100dvh;display:flex;flex-direction:column;gap:6px;padding:6px;max-width:1000px;margin:0 auto}
 
-/* ---------- Верх: блайнд и кнопки ---------- */
 .top{display:flex;gap:6px;align-items:stretch}
 .blindBox{flex:1;background:var(--panel);border:2px solid var(--panel-dark);border-radius:10px;padding:6px;text-align:center;min-width:0}
 .blindName{font-weight:700;font-size:16px;background:#6e8a63;border-radius:8px;padding:5px;text-shadow:0 2px 0 #222}
@@ -26,16 +24,16 @@ body{font-family:system-ui,sans-serif;color:#fff;overflow:hidden;user-select:non
 .topBtns{display:flex;flex-direction:column;gap:6px;width:60px}
 .topBtns button{flex:1;padding:0;font-size:20px;border-radius:10px}
 
-/* ---------- Статистика ---------- */
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .box{background:var(--panel);border:2px solid var(--panel-dark);border-radius:10px;padding:4px 2px;text-align:center;font-size:11px}
 .box b{display:block;font-size:20px;color:#fff;line-height:1.2}
 .box.money b{color:#f5a623}
 
-/* ---------- Джокеры: лежат внахлёст ---------- */
+/* ---------- Джокеры: внахлёст, перетаскивание ---------- */
 .jokers{display:flex;justify-content:center;align-items:flex-end;min-height:100px;padding:4px 0;position:relative}
-.joker{flex:0 0 auto;width:72px;height:92px;margin-left:-26px;background:#fff;color:#222;border-radius:8px;border:2px solid #555;padding:4px;font-size:9px;text-align:center;overflow:hidden;box-shadow:0 4px 8px rgba(0,0,0,.4);animation:pop .4s;cursor:pointer}
+.joker{flex:0 0 auto;width:72px;height:92px;margin-left:-26px;background:#fff;color:#222;border-radius:8px;border:2px solid #555;padding:4px;font-size:9px;text-align:center;overflow:hidden;box-shadow:0 4px 8px rgba(0,0,0,.4);cursor:grab;touch-action:none;position:relative}
 .joker:first-child{margin-left:0}
+.joker.drag{z-index:30;cursor:grabbing;box-shadow:0 10px 20px rgba(0,0,0,.6);opacity:.95}
 .joker b{display:block;font-size:11px;margin-bottom:2px}
 .joker.legend{background:linear-gradient(135deg,#b7950b,#f1c40f)}
 .joker .trig{display:block;opacity:.7;font-size:8px;margin-top:2px}
@@ -49,11 +47,9 @@ body{font-family:system-ui,sans-serif;color:#fff;overflow:hidden;user-select:non
 .consRow{display:flex;gap:6px;overflow-x:auto;min-height:34px}
 .consRow button{flex:0 0 auto;font-size:12px;padding:6px 10px}
 
-/* ---------- Подсказки ---------- */
 .curHand{text-align:center;font-size:14px;min-height:22px;background:rgba(0,0,0,.3);border-radius:8px;padding:4px 8px}
 #msg{text-align:center;color:#ffe08a;min-height:36px;font-size:13px;line-height:1.3;padding:0 4px}
 
-/* ---------- Рука и колода ---------- */
 .handWrap{flex:1;min-height:120px;position:relative;display:flex;align-items:flex-end}
 .hand{flex:1;display:flex;align-items:flex-end;justify-content:safe center;gap:0;overflow-x:auto;padding:8px 62px 8px 4px;min-width:0}
 .gcard{position:relative;flex:0 0 48px;width:48px;height:68px;margin-left:-12px;background:radial-gradient(circle at 30% 20%,#fff 0%,transparent 60%),var(--card-bg);border:1px solid #d9d0bb;border-radius:8px;color:var(--black);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 5px 10px rgba(0,0,0,.45);transition:transform .2s cubic-bezier(.2,.8,.3,1.2),box-shadow .2s}
@@ -76,17 +72,14 @@ body{font-family:system-ui,sans-serif;color:#fff;overflow:hidden;user-select:non
 .deckBox{position:absolute;right:0;bottom:8px;width:50px;height:68px;border-radius:7px;border:2px solid #fff;background:repeating-linear-gradient(45deg,#2b3ed0 0 6px,#1d2a8f 6px 12px);display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;box-shadow:0 5px 10px rgba(0,0,0,.5)}
 #deckCount{background:rgba(0,0,0,.65);padding:1px 6px;border-radius:6px;font-size:12px;font-weight:700}
 
-/* ---------- Панель сортировки ---------- */
 .sortBox{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--panel);border:2px solid #cfd8c4;border-radius:10px;padding:4px;font-size:12px;gap:4px}
 .sortBox div{display:flex;gap:4px;width:100%}
 .sortBox button{flex:1;padding:6px 2px;font-size:12px;min-width:0;box-shadow:none}
 .sortBox button.active{outline:2px solid var(--gold);transform:translateY(1px)}
 
-/* ---------- Нижние кнопки ---------- */
 .actions{display:grid;grid-template-columns:1.2fr 1.3fr 1.1fr 1fr;gap:6px}
 .actions button{padding:12px 4px;font-size:13px;border-radius:10px;min-width:0}
 
-/* ---------- Кнопки ---------- */
 button{background:#27ae60;color:#fff;border:none;padding:10px 12px;border-radius:9px;font-size:14px;cursor:pointer;transition:transform .1s,box-shadow .1s;box-shadow:0 3px 0 rgba(0,0,0,.35)}
 button:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
 button:disabled{background:#555;cursor:not-allowed;box-shadow:none}
@@ -94,12 +87,12 @@ button.alt{background:#1b8be0}
 button.red{background:#e0412f}
 button.gray{background:#7f8c8d}
 button.orange{background:#f39c12}
+select{background:#1e3026;color:#fff;border:1px solid #fff4;border-radius:6px;padding:4px;font-size:12px;max-width:110px}
 
-/* ---------- Оверлеи ---------- */
 .overlay{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;padding:12px;z-index:5}
 .overlay.show{display:flex}
 .panel{background:var(--panel);border-radius:10px;padding:12px;width:100%;max-width:440px;max-height:90vh;overflow:auto}
-.item{display:flex;justify-content:space-between;align-items:center;background:#1e3026;padding:8px;border-radius:6px;margin-bottom:6px;font-size:14px;gap:6px}
+.item{display:flex;justify-content:space-between;align-items:center;background:#1e3026;padding:8px;border-radius:6px;margin-bottom:6px;font-size:14px;gap:6px;flex-wrap:wrap}
 .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #fff2}
 .tabs{display:flex;gap:6px;margin-bottom:8px}
 .tabs button{flex:1}
@@ -107,14 +100,13 @@ h2.t{text-align:center;color:var(--gold);margin:0 0 10px}
 #shopMsg{text-align:center;color:#ffe08a;min-height:20px;margin-bottom:6px;font-size:14px}
 .popup{position:fixed;top:40%;left:50%;font-size:30px;font-weight:bold;color:var(--gold);text-shadow:0 2px 4px #000;pointer-events:none;animation:float 1.2s forwards;z-index:10}
 
-/* ---------- Окно джокера с перестановкой ---------- */
 #jokerZoom{align-items:center;justify-content:center}
 .zoomCard{width:210px;min-height:280px;background:#fff;color:#222;border-radius:14px;border:4px solid var(--gold);padding:18px;font-size:18px;text-align:center;box-shadow:0 10px 30px #000;animation:pop .25s}
 .zoomCard b{display:block;font-size:24px;margin-bottom:12px}
 .zoomCard small{display:block;margin-top:14px;font-size:14px;opacity:.7}
 .zoomCard.legend{background:linear-gradient(135deg,#b7950b,#f1c40f)}
 .zoomCard .edLabel{display:block;font-size:14px;color:#6a1b9a;margin-bottom:8px}
-.zoomHint{color:#fff;font-size:13px;margin-top:14px;opacity:.8}
+.zoomHint{color:#555;font-size:13px;margin-top:14px}
 .moveRow{display:flex;gap:8px;justify-content:center;margin-top:12px}
 .moveRow button{min-width:90px;font-size:16px}
 
@@ -122,7 +114,6 @@ h2.t{text-align:center;color:var(--gold);margin:0 0 10px}
 @keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
 @keyframes float{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}100%{opacity:0;transform:translate(-50%,-150%)}}
 
-/* ---------- Большой экран ---------- */
 @media (min-width:700px){
   .gcard{flex:0 0 62px;width:62px;height:88px;margin-left:-16px}
   .gcard .corner b{font-size:15px}
@@ -219,9 +210,9 @@ h2.t{text-align:center;color:var(--gold);margin:0 0 10px}
   <div class="overlay" id="admin">
     <div class="panel">
       <h2 class="t">🛠 Админ-панель</h2>
-            <div style="display:flex;gap:6px;margin-bottom:8px">
-        <button id="tabStats" class="alt" style="flex:1">Статистика</button>
-        <button id="tabTests" class="gray" style="flex:1">Тесты</button>
+      <div class="tabs">
+        <button id="tabStats" class="alt">Статистика</button>
+        <button id="tabTests" class="gray">Тесты</button>
       </div>
       <div id="adminBody">Загрузка...</div>
       <div id="adminTests" style="display:none">
@@ -239,14 +230,18 @@ h2.t{text-align:center;color:var(--gold);margin:0 0 10px}
           <button onclick="adminJump()">Перейти</button></span></div>
         <div class="item"><span>Выиграть раунд</span>
           <button onclick="adminWinRound()">Выиграть</button></div>
+        <div class="item"><span>Победа одной картой</span>
+          <button id="oneCardBtn" class="gray" onclick="adminOneCard()">Выключено</button></div>
         <div class="item"><span>Восполнить руки и сбросы</span>
           <button onclick="adminRefill()">Заполнить</button></div>
         <div class="item"><span>Цель = 1 очко</span>
           <button onclick="adminTinyTarget()">Включить</button></div>
+        <div class="item"><span>Сбросить обновление магазина</span>
+          <button onclick="adminResetReroll()">Сбросить</button></div>
         <div class="item"><span>Открыть все колоды</span>
           <button onclick="adminUnlockAll()">Открыть</button></div>
       </div>
-      <button id="adminRefresh" class="alt" style="width:100%;margin-top:8px">Обновить</button>
+      <button id="adminRefresh" class="alt" style="width:100%;margin-top:8px">Обновить статистику</button>
       <button id="adminClose" class="gray" style="width:100%;margin-top:6px">Закрыть</button>
     </div>
   </div>
@@ -305,8 +300,11 @@ const BOSS_IDS = Object.keys(BOSSES);
 const MAX_ANTE = 8;
 const MAX_ROUNDS = MAX_ANTE * 3;
 const pickBoss = () => BOSS_IDS[Math.floor(Math.random() * BOSS_IDS.length)];
+
+// Сложность: все цели умножаются на DIFFICULTY (0.7 = легче на 30%)
+const DIFFICULTY = 0.7;
 const ANTE_BASE = [300, 700, 1500, 3200, 6500, 12000, 20000, 30000];
-const baseTarget = ante => ANTE_BASE[Math.min(ante - 1, ANTE_BASE.length - 1)];
+const baseTarget = ante => ANTE_BASE[Math.min(ante - 1, ANTE_BASE.length - 1)] * DIFFICULTY;
 const blindTarget = () => Math.round(baseTarget(G.ante) * BLINDS[G.blindIdx].mult / 10) * 10;
 function roundNo(){ return (G.ante - 1) * 3 + G.blindIdx + 1; }
 
@@ -316,14 +314,8 @@ const RARITY_WEIGHTS = [['common',70], ['uncommon',25], ['rare',5]];
 const EDITION_NAME = {foil:'Фольга', holo:'Голография', poly:'Полихром'};
 const EDITION_DESC = {foil:'+50 фишек', holo:'+10 множителя', poly:'×1.5 множитель'};
 
-/* ---------- Джокеры ----------
-   effect(ctx) возвращает эффект в одном из видов:
-   {chips}  — прибавка фишек
-   {mult}   — прибавка множителя (срабатывает до умножений)
-   {xmult}  — умножение множителя
-   Срабатывают по порядку слева направо в scoreHand. */
+/* ---------- Джокеры (срабатывают слева направо) ---------- */
 const JOKERS = [
-  // Обычные (70%)
   {id:'happy',   name:'Весёлый',    cost:3, rarity:'common', desc:'+4 множителя', effect:()=>({mult:4})},
   {id:'greedy',  name:'Жадный',     cost:4, rarity:'common', desc:'+3 фишки за каждую ♦',
      effect:({cards})=>({chips:3*cards.filter(c=>c.suit==='♦').length})},
@@ -343,7 +335,6 @@ const JOKERS = [
   {id:'spade',   name:'Пиковый',    cost:4, rarity:'common', desc:'+4 множителя за каждую ♠',
      effect:({cards})=>({mult:4*cards.filter(c=>c.suit==='♠').length})},
 
-  // Необычные (25%)
   {id:'pairs',   name:'Мастер пар', cost:5, rarity:'uncommon', desc:'+8 множителя при Паре и выше',
      effect:({name})=>({mult:name==='Старшая карта'?0:8})},
   {id:'double',  name:'Удвоитель',  cost:6, rarity:'uncommon', desc:'×1.5 множитель', effect:()=>({xmult:1.5})},
@@ -370,14 +361,13 @@ const JOKERS = [
   {id:'fourkind', name:'Четвёрка',  cost:6, rarity:'uncommon', desc:'+30 фишек и +5 множителя при Каре',
      effect:({name})=>name==='Каре' ? {chips:30, mult:5} : {}},
 
-  // Редкие (5%)
   {id:'king', name:'Король', cost:8, rarity:'rare', desc:'×1.5 за каждого короля в сыгранной руке',
      effect:({cards})=>({xmult:Math.pow(1.5, cards.filter(c=>c.rank==='K').length)})},
   {id:'legend', name:'Легенда', cost:10, rarity:'rare', desc:'×2 множитель', effect:()=>({xmult:2})},
 ];
 const JOKER_BY_ID = Object.fromEntries(JOKERS.map(j=>[j.id,j]));
 
-/* ---------- Уровни комбинаций (планеты) ---------- */
+/* ---------- Уровни комбинаций ---------- */
 const LEVEL_BONUS = {chips:10, mult:1};
 function defaultLevels(){
   return Object.fromEntries(Object.keys(HAND_TABLE).map(h=>[h,1]));
@@ -390,7 +380,7 @@ const ENHANCEMENTS = {
   mult:  {name:'Множитель', desc:'+4 множителя при розыгрыше'},
 };
 
-/* ---------- Расходники: планеты и таро ---------- */
+/* ---------- Расходники ---------- */
 const CONSUMABLES = [
   ...Object.keys(HAND_TABLE).map(h=>({
     id:'planet:'+h, type:'planet', hand:h,
@@ -438,7 +428,6 @@ const DECKS = {
              req:{key:'rareBought', min:3, text:'Купить 3 редких джокера'}},
 };
 
-/* ---------- Статистика игрока (хранится в облаке Telegram) ---------- */
 let STATS = {runs:0, bestAnte:0, maxJokers:0, wins:0, straightFlush:0, rareBought:0};
 function isUnlocked(id){
   const r = DECKS[id].req;
@@ -454,7 +443,7 @@ function saveStats(){ store.set('stats', STATS); }
 /* ---------- Состояние ---------- */
 const G = {best:0, sound:true, jokers:[], jokerEds:[], hand:[], deck:[], selected:new Set(),
            pendingMult:0, pendingChips:0, wins:0, cleared:0, handsPlayed:0, runId:null,
-           shopStock:[], goldPlayed:0, headSuit:null};
+           shopStock:[], goldPlayed:0, headSuit:null, rerolled:false, oneCard:false};
 
 /* ---------- Звук ---------- */
 const SOUND_FILES = {
@@ -498,7 +487,7 @@ function sfx(name){
   }
 }
 
-/* ---------- Хранилище (с таймаутом, чтобы не зависать) ---------- */
+/* ---------- Хранилище ---------- */
 const store = {
   set(key, val){
     const v = JSON.stringify(val);
@@ -522,12 +511,9 @@ const store = {
   }
 };
 
-/* ---------- Удаление сохранения забега (после победы или поражения) ---------- */
 function clearRun(){
   store.set('run', null);
-  try{
-    if(tg?.CloudStorage?.removeItem) tg.CloudStorage.removeItem('run');
-  }catch(e){}
+  try{ if(tg?.CloudStorage?.removeItem) tg.CloudStorage.removeItem('run'); }catch(e){}
   $('continueBtn').style.display = 'none';
   $('continueBtn').onclick = null;
 }
@@ -597,7 +583,6 @@ function evalHand(cards){
   return 'Старшая карта';
 }
 
-// Карта не даёт фишек при текущем боссе
 function noChips(c){
   if(G.boss==='heart' && c.suit==='♥') return true;
   if(G.boss==='head' && c.suit===G.headSuit) return true;
@@ -606,11 +591,6 @@ function noChips(c){
   return false;
 }
 
-/* Подсчёт очков по порядку:
-   1) фишки и множитель базовой комбинации + фишки карт + усиления карт;
-   2) джокеры слева направо: прибавки сразу добавляются к множителю,
-      умножения сразу умножают текущий множитель;
-   3) итог = фишки × множитель. */
 function scoreHand(cards){
   const name = evalHand(cards), base = HAND_TABLE[name];
   const lvl = (G.handLevels?.[name] || 1) - 1;
@@ -720,6 +700,7 @@ function winBlind(){
   store.set('best', G.best);
   msg(`🎉 ${b.name} пройден! +$${reward}`);
   G.shopStock = makeShopStock();
+  G.rerolled = false;               // в новом магазине обновление снова доступно (1 раз)
   shopMsg('');
   save(); render();
   openShop();
@@ -763,7 +744,7 @@ function render(){
     const cls = ['joker', j.rarity==='rare' ? 'legend' : '', ed ? 'ed-'+ed : ''].join(' ');
     const edLabel = ed ? `<span class="edLabel">${EDITION_NAME[ed]}</span>` : '';
     const t = j.trigger ? `<span class="trig">${j.trigger}</span>` : '';
-    return `<div class="${cls}" onclick="showJoker(${i})"><b>${j.name}</b>${edLabel}${j.desc}${t}<span class="ord">№${i+1}</span></div>`;
+    return `<div class="${cls}" data-i="${i}"><b>${j.name}</b>${edLabel}${j.desc}${t}<span class="ord">№${i+1}</span></div>`;
   }).join('') || '<span class="emptyNote">Джокеров нет</span>';
 
   const handEl = $('hand'); handEl.innerHTML = '';
@@ -821,7 +802,7 @@ function showCardInfo(i){
   msg(`${c.rank}${c.suit}: усиление «${e.name}». ${e.desc}`);
 }
 
-/* Окно джокера: крупно, с кнопками перестановки ← и → */
+/* ---------- Окно джокера (кнопки ← →) ---------- */
 let zoomIdx = -1;
 function showJoker(i){
   zoomIdx = i;
@@ -851,7 +832,6 @@ function renderZoom(){
   $('zoomRight').onclick = (e)=>{ e.stopPropagation(); moveJoker(1); };
 }
 
-// Меняет джокера местами с соседом. Порядок влияет на расчёт очков
 function moveJoker(dir){
   const i = zoomIdx, k = i + dir;
   if(k < 0 || k >= G.jokers.length) return;
@@ -860,6 +840,46 @@ function moveJoker(dir){
   zoomIdx = k;
   save(); render(); renderZoom();
 }
+
+/* ---------- Перестановка джокеров свайпом (как в Balatro) ---------- */
+let jd = null;
+const jokersEl = $('jokers');
+
+jokersEl.addEventListener('pointerdown', e=>{
+  const el = e.target.closest('.joker');
+  if(!el) return;
+  jd = {i:+el.dataset.i, el, startX:e.clientX, moved:false};
+  try{ el.setPointerCapture(e.pointerId); }catch(err){}
+});
+
+jokersEl.addEventListener('pointermove', e=>{
+  if(!jd) return;
+  const dx = e.clientX - jd.startX;
+  if(!jd.moved && Math.abs(dx) > 8){ jd.moved = true; jd.el.classList.add('drag'); }
+  if(jd.moved) jd.el.style.transform = `translateX(${dx}px) scale(1.06)`;
+});
+
+function endJokerDrag(e){
+  if(!jd) return;
+  const {i, el, moved} = jd;
+  jd = null;
+  if(!moved){ showJoker(i); return; }
+  // Новое место = сколько остальных джокеров стоят левее пальца
+  let k = 0;
+  [...jokersEl.children].forEach((c, j)=>{
+    if(j === i) return;
+    const r = c.getBoundingClientRect();
+    if(r.left + r.width/2 < e.clientX) k++;
+  });
+  if(k !== i){
+    const [id] = G.jokers.splice(i, 1);   G.jokers.splice(k, 0, id);
+    const [ed] = G.jokerEds.splice(i, 1); G.jokerEds.splice(k, 0, ed);
+    sfx('select'); save(); msg(`Джокер перемещён на позицию №${k+1}`);
+  }
+  render();
+}
+jokersEl.addEventListener('pointerup', endJokerDrag);
+jokersEl.addEventListener('pointercancel', endJokerDrag);
 
 function toggle(i){
   const c = G.hand[i];
@@ -917,6 +937,7 @@ function play(){
   const r = scoreHand(cards);
   if(r.name==='Стрит-флеш'){ STATS.straightFlush++; saveStats(); }
   G.score += r.total; G.handsLeft--; G.handsPlayed++;
+  if(G.oneCard) G.score = Math.max(G.score, G.target);   // админ-режим: победа одной картой
   G.pendingMult = 0; G.pendingChips = 0;
   G.goldPlayed = (G.goldPlayed || 0) + cards.filter(c=>c.enh==='gold').length;
   G.hand = G.hand.filter((_,i)=>!G.selected.has(i));
@@ -1051,13 +1072,19 @@ function openShop(){
     (owned ? `<div style="font-size:12px;opacity:.7;margin-bottom:4px">Твои джокеры (${G.jokers.length}/5)</div>${owned}<hr style="opacity:.2">` : '')
     + items
     + `<div class="item"><span>Твои деньги:</span><b>$${G.money}</b></div>`;
+
+  $('rerollBtn').disabled = G.rerolled;
+  $('rerollBtn').textContent = G.rerolled ? '🔄 Обновление использовано' : '🔄 Обновить ($2, один раз)';
   $('shop').classList.add('show');
 }
 
+// Обновить магазин можно только 1 раз за каждый магазин
 function reroll(){
   const COST = 2;
+  if(G.rerolled) return shopMsg('Обновление уже использовано в этом магазине');
   if(G.money < COST) return shopMsg(`Не хватает денег для обновления: нужно $${COST}, у вас $${G.money}`);
   G.money -= COST;
+  G.rerolled = true;
   G.shopStock = makeShopStock();
   shopMsg('Магазин обновлён');
   sfx('buy');
@@ -1073,8 +1100,9 @@ function buy(idx){
     if(G.money < j.cost) return shopMsg(`Не хватает денег: нужно $${j.cost}, у вас $${G.money}`);
     if(G.jokers.length >= 5) return shopMsg('Слоты джокеров заполнены. Продайте один из своих джокеров выше');
     G.money -= j.cost; G.jokers.push(it.id); G.jokerEds.push(it.ed || null);
-    STATS.maxJokers = Math.max(STATS.maxJokers, G.jokers.length); saveStats();
-    if(j.rarity==='rare'){ STATS.rareBought++; saveStats(); }
+    STATS.maxJokers = Math.max(STATS.maxJokers, G.jokers.length);
+    if(j.rarity==='rare') STATS.rareBought++;
+    saveStats();
     shopMsg(`Куплен джокер: ${j.name}`);
   } else {
     const c = CONS_BY_ID[it.id];
@@ -1132,7 +1160,7 @@ async function startNew(deckId){
   Object.assign(G, {
     deckId, ante:1, blindIdx:0, money:DECKS[deckId].apply.money||0,
     jokers:[], jokerEds:[], wins:0, cleared:0, anteBoss:pickBoss(), runId:null,
-    handLevels:defaultLevels(), consumables:[], shopStock:[], goldPlayed:0,
+    handLevels:defaultLevels(), consumables:[], shopStock:[], goldPlayed:0, rerolled:false,
   });
   STATS.runs++; saveStats();
   $('continueBtn').style.display = 'none';
@@ -1171,7 +1199,7 @@ $('tabAll').onclick  = ()=>showBoard('all');
 $('boardBtn').onclick = ()=>showBoard();
 $('closeBoard').onclick = ()=>$('board').classList.remove('show');
 
-/* ---------- Админ-панель (видна только администратору) ---------- */
+/* ---------- Админ-панель ---------- */
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 async function checkAdmin(){
@@ -1212,24 +1240,11 @@ async function adminDelete(runId){
   try{ await apiPost('/admin/delete_score', {run_id:runId}); }catch(e){}
   loadAdmin();
 }
-
 async function adminClearBoard(boardKey){
   if(!confirm(`Очистить весь рейтинг ${boardKey}?`)) return;
   try{ await apiPost('/admin/clear_board', {board_key:boardKey}); }catch(e){}
   loadAdmin();
 }
-
-$('adminBtn').onclick = ()=>{ $('admin').classList.add('show'); loadAdmin(); };
-$('adminRefresh').onclick = loadAdmin;
-$('adminClose').onclick = ()=>$('admin').classList.remove('show');
-
-/* ---------- Кнопки ---------- */
-$('playBtn').onclick = play;
-$('discardBtn').onclick = discard;
-$('sortRank').onclick = ()=>animateSort(byRank, 'sortRank');
-$('sortSuit').onclick = ()=>animateSort(bySuit, 'sortSuit');
-$('skipBtn').onclick = skipBlind;
-$('soundBtn').onclick = ()=>{ G.sound = !G.sound; $('soundBtn').textContent = G.sound ? '🔊' : '🔇'; };
 
 /* ---------- Инструменты тестирования (только админ) ---------- */
 function fillAdminSelects(){
@@ -1241,67 +1256,94 @@ function fillAdminSelects(){
   $('tBlind').innerHTML = BLINDS.map((b,i)=>`<option value="${i}">${b.name}</option>`).join('');
 }
 
+// Каждое действие сначала проходит проверку на сервере (только ADMIN_IDS)
 async function adminAct(action){
   try{ await apiPost('/admin/action', {action}); return true; }
   catch(e){ msg('Нет доступа к админ-действию'); return false; }
 }
+const inRun = () => G.deckId && G.hand;
 
 async function adminMoney(n){
-  if(!G.hand || !await adminAct('money')) return;
+  if(!inRun() || !await adminAct('money')) return;
   G.money += n; save(); render(); msg(`Админ: +$${n}`);
 }
-
 async function adminAddCard(){
-  if(!G.hand || !await adminAct('card')) return;
-  G.hand.push({rank:$('tRank').value, suit:$('tSuit').value, val:RANK_VAL[$('tRank').value], fresh:true, down:false});
+  if(!inRun() || !await adminAct('card')) return;
+  const r = $('tRank').value;
+  G.hand.push({rank:r, suit:$('tSuit').value, val:RANK_VAL[r], fresh:true, down:false});
   render(); msg('Админ: карта добавлена в руку');
 }
-
 async function adminAddJoker(){
-  if(!G.hand || !await adminAct('joker')) return;
+  if(!inRun() || !await adminAct('joker')) return;
   if(G.jokers.length >= 5) return msg('Админ: слоты джокеров заполнены');
   G.jokers.push($('tJoker').value); G.jokerEds.push(null);
   save(); render(); msg('Админ: джокер добавлен');
 }
-
 async function adminAddCons(){
-  if(!G.hand || !await adminAct('cons')) return;
+  if(!inRun() || !await adminAct('cons')) return;
   if(G.consumables.length >= 2) return msg('Админ: слоты расходников заполнены');
   G.consumables.push($('tCons').value);
   save(); render(); msg('Админ: расходник добавлен');
 }
-
 async function adminJump(){
-  if(!G.hand || !await adminAct('jump')) return;
+  if(!inRun() || !await adminAct('jump')) return;
   G.ante = +$('tAnte').value; G.blindIdx = +$('tBlind').value;
-  if(G.blindIdx === 2) G.anteBoss = G.anteBoss || pickBoss();
+  G.anteBoss = G.anteBoss || pickBoss();
+  $('shop').classList.remove('show');
   startBlind(); msg('Админ: переход к раунду');
 }
-
 async function adminWinRound(){
-  if(!G.hand || !await adminAct('win')) return;
+  if(!inRun() || !await adminAct('win')) return;
   G.score = G.target; winBlind();
 }
-
+async function adminOneCard(){
+  if(!await adminAct('onecard')) return;
+  G.oneCard = !G.oneCard;
+  $('oneCardBtn').textContent = G.oneCard ? 'ВКЛЮЧЕНО' : 'Выключено';
+  $('oneCardBtn').className = G.oneCard ? 'red' : 'gray';
+  msg(G.oneCard ? 'Админ: любая сыгранная рука выигрывает блайнд' : 'Админ: режим выключен');
+}
 async function adminRefill(){
-  if(!G.hand || !await adminAct('refill')) return;
+  if(!inRun() || !await adminAct('refill')) return;
   G.handsLeft = 9; G.discardsLeft = 9; render(); msg('Админ: руки и сбросы восполнены');
 }
-
 async function adminTinyTarget(){
-  if(!G.hand || !await adminAct('tiny')) return;
+  if(!inRun() || !await adminAct('tiny')) return;
   G.target = 1; render(); msg('Админ: цель 1 очко');
 }
-
+async function adminResetReroll(){
+  if(!await adminAct('reroll')) return;
+  G.rerolled = false; if($('shop').classList.contains('show')) openShop();
+  msg('Админ: обновление магазина снова доступно');
+}
 async function adminUnlockAll(){
   if(!await adminAct('unlock')) return;
   for(const k of ['wins','straightFlush','rareBought']) STATS[k] = Math.max(STATS[k]||0, 99);
-  saveStats(); msg('Админ: колоды открыты (перезапустите меню)');
+  saveStats(); buildMenu(); msg('Админ: колоды открыты');
 }
 
-$('tabStats').onclick = ()=>{ $('adminBody').style.display=''; $('adminTests').style.display='none'; };
-$('tabTests').onclick = ()=>{ $('adminBody').style.display='none'; $('adminTests').style.display=''; };
-fillAdminSelects();/* ---------- Запуск ---------- */
+$('tabStats').onclick = ()=>{
+  $('adminBody').style.display=''; $('adminTests').style.display='none';
+  $('tabStats').className='alt'; $('tabTests').className='gray';
+};
+$('tabTests').onclick = ()=>{
+  $('adminBody').style.display='none'; $('adminTests').style.display='';
+  $('tabStats').className='gray'; $('tabTests').className='alt';
+};
+$('adminBtn').onclick = ()=>{ $('admin').classList.add('show'); loadAdmin(); };
+$('adminRefresh').onclick = loadAdmin;
+$('adminClose').onclick = ()=>$('admin').classList.remove('show');
+fillAdminSelects();
+
+/* ---------- Кнопки ---------- */
+$('playBtn').onclick = play;
+$('discardBtn').onclick = discard;
+$('sortRank').onclick = ()=>animateSort(byRank, 'sortRank');
+$('sortSuit').onclick = ()=>animateSort(bySuit, 'sortSuit');
+$('skipBtn').onclick = skipBlind;
+$('soundBtn').onclick = ()=>{ G.sound = !G.sound; $('soundBtn').textContent = G.sound ? '🔊' : '🔇'; };
+
+/* ---------- Запуск ---------- */
 async function init(){
   STATS = {...STATS, ...((await store.get('stats')) || {})};
   G.best = (await store.get('best')) || 0;
@@ -1318,6 +1360,7 @@ async function init(){
       G.consumables = saved.consumables || [];
       G.shopStock = [];
       G.goldPlayed = 0;
+      G.rerolled = false;
       hideMenu(); startBlind();
     };
   }
